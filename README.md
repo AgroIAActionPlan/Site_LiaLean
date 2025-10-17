@@ -31,7 +31,7 @@ Website completo e responsivo para a LeanLia - Consultoria de Inteligência Arti
 - **Auth**: Manus OAuth (configurável)
 - **Build**: Vite
 
-## 📦 Instalação
+## 📦 Instalação Local (Desenvolvimento)
 
 ```bash
 # Instalar dependências
@@ -46,6 +46,16 @@ pnpm db:push
 # Iniciar servidor de desenvolvimento
 pnpm dev
 ```
+
+## 🚀 Deploy em Produção
+
+Para publicar o site em seu servidor:
+
+- **Guia Rápido (5 minutos)**: [QUICK_START.md](./QUICK_START.md)
+- **Guia Completo (passo a passo)**: [DEPLOY.md](./DEPLOY.md)
+- **Schema do Banco**: [database/schema.sql](./database/schema.sql)
+- **Script de Deploy Automatizado**: [scripts/deploy.sh](./scripts/deploy.sh)
+- **Script de Backup**: [scripts/backup-database.sh](./scripts/backup-database.sh)
 
 ## 🌐 URLs
 
@@ -122,13 +132,27 @@ O site é totalmente responsivo com breakpoints:
 - **Tablet**: 640px - 1024px
 - **Desktop**: > 1024px
 
+## 🔧 Scripts Disponíveis
+
+```bash
+# Desenvolvimento
+pnpm dev          # Iniciar servidor de desenvolvimento
+pnpm build        # Compilar para produção
+pnpm start        # Iniciar servidor de produção
+pnpm db:push      # Aplicar migrações do banco
+
+# Deploy e Manutenção
+./scripts/deploy.sh              # Deploy automatizado
+./scripts/backup-database.sh     # Backup do banco de dados
+```
+
 ## 🔧 Próximos Passos
 
 1. **Integração de Autenticação**: Conectar a página de login com sistema real
 2. **Backend do Formulário**: Implementar envio de emails do formulário de contato
-3. **Analytics**: Adicionar Google Analytics ou similar
+3. **Analytics**: Adicionar Google Analytics ou similar (opcional)
 4. **SEO**: Otimizar meta tags e estrutura para SEO
-5. **Deploy**: Configurar CI/CD e deploy em produção
+5. **Monitoramento**: Configurar alertas e monitoramento de uptime
 
 ## 📞 Contato
 
