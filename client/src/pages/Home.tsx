@@ -61,7 +61,7 @@ export default function Home() {
         <div className="container">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="text-2xl font-bold text-primary">LeanLia</div>
+              <div className="text-2xl font-bold text-primary">LiaLean</div>
             </div>
 
             {/* Desktop Navigation */}
@@ -526,14 +526,14 @@ export default function Home() {
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">{t.contact.title}</h2>
           <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
             <div>
-              <h3 className="text-2xl font-bold mb-6">LeanLia</h3>
+              <h3 className="text-2xl font-bold mb-6">LiaLean</h3>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
                   <Mail className="h-5 w-5 text-primary mt-1" />
                   <div>
                     <p className="font-semibold">Email</p>
-                    <a href="mailto:contato@leanlia.com" className="text-muted-foreground hover:text-primary">
-                      contato@leanlia.com
+                    <a href="mailto:contato@lialean.com" className="text-muted-foreground hover:text-primary">
+                      contato@lialean.com
                     </a>
                   </div>
                 </div>
@@ -558,10 +558,10 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="flex gap-4 pt-4">
-                  <a href="https://instagram.com/leanlia" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                  <a href="https://instagram.com/lialean" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
                     <Instagram className="h-6 w-6" />
                   </a>
-                  <a href="https://linkedin.com/company/leanlia" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                  <a href="https://linkedin.com/company/lialean" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
                     <Linkedin className="h-6 w-6" />
                   </a>
                 </div>
@@ -625,7 +625,7 @@ export default function Home() {
         <div className="container">
           <div className="grid md:grid-cols-3 gap-8 mb-8">
             <div>
-              <h3 className="text-xl font-bold mb-4">LeanLia</h3>
+              <h3 className="text-xl font-bold mb-4">LiaLean</h3>
               <p className="text-muted-foreground">
                 {t.footer.about}
               </p>
@@ -633,17 +633,17 @@ export default function Home() {
             <div>
               <h4 className="font-semibold mb-4">{t.footer.contact}</h4>
               <div className="space-y-2 text-muted-foreground">
-                <p>contato@leanlia.com</p>
+                <p>contato@lialean.com</p>
                 <p>(11) 93396-7595</p>
               </div>
             </div>
             <div>
               <h4 className="font-semibold mb-4">{t.footer.followUs}</h4>
               <div className="flex gap-4">
-                <a href="https://instagram.com/leanlia" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                <a href="https://instagram.com/lialean" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
                   <Instagram className="h-6 w-6" />
                 </a>
-                <a href="https://linkedin.com/company/leanlia" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                <a href="https://linkedin.com/company/lialean" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
                   <Linkedin className="h-6 w-6" />
                 </a>
               </div>
@@ -657,7 +657,7 @@ export default function Home() {
             </div>
           </div>
           <div className="border-t border-border pt-8 text-center text-muted-foreground text-sm">
-            <p>© 2024 LeanLia. {t.footer.rights}</p>
+            <p>© 2024 LiaLean. {t.footer.rights}</p>
           </div>
         </div>
       </footer>

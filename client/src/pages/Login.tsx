@@ -32,7 +32,7 @@ export default function Login() {
             <Link href="/">
               <Button variant="ghost" className="gap-2">
                 <ArrowLeft className="h-4 w-4" />
-                <span className="text-2xl font-bold text-primary">LeanLia</span>
+                <span className="text-2xl font-bold text-primary">LiaLean</span>
               </Button>
             </Link>
             <LanguageSelector />

@@ -1,6 +1,6 @@
-# Site LeanLia
+# Site LiaLean
 
-Website completo e responsivo para a LeanLia - Consultoria de Inteligência Artificial para o Agronegócio.
+Website completo e responsivo para a LiaLean - Consultoria de Inteligência Artificial para o Agronegócio.
 
 ## 🌟 Características
 
@@ -9,7 +9,7 @@ Website completo e responsivo para a LeanLia - Consultoria de Inteligência Arti
 - **Identidade Visual Agronegócio**: Paleta de cores verde (campo) e azul (tecnologia)
 - **10 Seções Principais**:
   1. Hero Section - Apresentação impactante
-  2. Sobre a LeanLia - Missão e diferenciais
+  2. Sobre a LiaLean - Missão e diferenciais
   3. LIA - Assistente de IA dedicado
   4. 4 Visões de IA - Descritiva, Diagnóstica, Preditiva e Prescritiva
   5. Metodologia TAIA - 4 fases de implementação
@@ -61,12 +61,12 @@ Para publicar o site em seu servidor:
 
 - **Desenvolvimento**: http://localhost:3000
 - **Produção**: [A ser configurado]
-- **GitHub**: https://github.com/AgroIAActionPlan/Site_LeanLia
+- **GitHub**: https://github.com/AgroIAActionPlan/Site_LiaLean
 
 ## 📝 Estrutura do Projeto
 
 ```
-Site_LeanLia/
+Site_LiaLean/
 ├── client/                 # Frontend React
 │   ├── public/            # Imagens e assets estáticos
 │   │   ├── hero-agro-tech.jpg
@@ -156,13 +156,13 @@ pnpm db:push      # Aplicar migrações do banco
 
 ## 📞 Contato
 
-- **Email**: contato@leanlia.com
+- **Email**: contato@lialean.com
 - **WhatsApp**: (11) 93396-7595
 - **Endereço**: Av. Pereira Barreto, 1201, Sala 24B, Torre Vitória, Centro, São Bernardo do Campo, SP
-- **Instagram**: [@leanlia](https://instagram.com/leanlia)
-- **LinkedIn**: [leanlia](https://linkedin.com/company/leanlia)
+- **Instagram**: [@lialean](https://instagram.com/lialean)
+- **LinkedIn**: [lialean](https://linkedin.com/company/lialean)
 
 ## 📄 Licença
 
-© 2024 LeanLia. Todos os direitos reservados.
+© 2024 LiaLean. Todos os direitos reservados.
 

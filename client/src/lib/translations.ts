@@ -275,7 +275,7 @@ export const translations: Record<Language, Translations> = {
       error: 'Erro ao enviar mensagem. Por favor, tente novamente.',
     },
     footer: {
-      about: 'Sobre a LeanLia',
+      about: 'Sobre a LiaLean',
       contact: 'Contato',
       followUs: 'Siga-nos',
       rights: 'Todos os direitos reservados.',
@@ -412,7 +412,7 @@ export const translations: Record<Language, Translations> = {
       error: 'Error sending message. Please try again.',
     },
     footer: {
-      about: 'About LeanLia',
+      about: 'About LiaLean',
       contact: 'Contact',
       followUs: 'Follow Us',
       rights: 'All rights reserved.',
@@ -549,7 +549,7 @@ export const translations: Record<Language, Translations> = {
       error: 'Error al enviar mensaje. Por favor, inténtelo de nuevo.',
     },
     footer: {
-      about: 'Sobre LeanLia',
+      about: 'Sobre LiaLean',
       contact: 'Contacto',
       followUs: 'Síguenos',
       rights: 'Todos los derechos reservados.',

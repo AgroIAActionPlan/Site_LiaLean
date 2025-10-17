@@ -1,4 +1,4 @@
-# Guia Rápido de Deploy - Site LeanLia
+# Guia Rápido de Deploy - Site LiaLean
 
 Este é um guia resumido para deploy rápido. Para instruções detalhadas, consulte [DEPLOY.md](./DEPLOY.md).
 
@@ -8,8 +8,8 @@ Este é um guia resumido para deploy rápido. Para instruções detalhadas, cons
 
 ```bash
 cd /var/www
-git clone https://github.com/AgroIAActionPlan/Site_LeanLia.git
-cd Site_LeanLia
+git clone https://github.com/AgroIAActionPlan/Site_LiaLean.git
+cd Site_LiaLean
 ```
 
 ### 2. Configurar Banco de Dados
@@ -19,9 +19,9 @@ cd Site_LeanLia
 mysql -u root -p
 
 # Executar comandos
-CREATE DATABASE leanlia_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'leanlia_user'@'localhost' IDENTIFIED BY 'SUA_SENHA_FORTE';
-GRANT ALL PRIVILEGES ON leanlia_db.* TO 'leanlia_user'@'localhost';
+CREATE DATABASE lialean_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'lialean_user'@'localhost' IDENTIFIED BY 'SUA_SENHA_FORTE';
+GRANT ALL PRIVILEGES ON lialean_db.* TO 'lialean_user'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
 ```
@@ -38,7 +38,7 @@ nano .env
 
 **Mínimo necessário no .env:**
 ```env
-DATABASE_URL=mysql://leanlia_user:SUA_SENHA@localhost:3306/leanlia_db
+DATABASE_URL=mysql://lialean_user:SUA_SENHA@localhost:3306/lialean_db
 JWT_SECRET=gere_uma_chave_segura_com_32_caracteres
 NODE_ENV=production
 PORT=3000
@@ -68,7 +68,7 @@ pnpm build
 npm install -g pm2
 
 # Iniciar aplicação
-pm2 start npm --name "leanlia" -- start
+pm2 start npm --name "lialean" -- start
 pm2 save
 pm2 startup
 ```
@@ -77,7 +77,7 @@ pm2 startup
 
 ```bash
 # Criar arquivo de configuração
-sudo nano /etc/nginx/sites-available/leanlia
+sudo nano /etc/nginx/sites-available/lialean
 ```
 
 **Conteúdo básico:**
@@ -99,7 +99,7 @@ server {
 
 ```bash
 # Ativar site
-sudo ln -s /etc/nginx/sites-available/leanlia /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/lialean /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl restart nginx
 ```
@@ -118,7 +118,7 @@ sudo certbot --nginx -d seu-dominio.com
 pm2 status
 
 # Ver logs
-pm2 logs leanlia
+pm2 logs lialean
 
 # Testar localmente
 curl http://localhost:3000
@@ -139,7 +139,7 @@ git pull origin main
 pnpm install
 pnpm db:push
 pnpm build
-pm2 restart leanlia
+pm2 restart lialean
 ```
 
 ## 💾 Backup Automático
@@ -149,19 +149,19 @@ pm2 restart leanlia
 sudo crontab -e
 
 # Adicionar linha:
-0 2 * * * /var/www/Site_LeanLia/scripts/backup-database.sh
+0 2 * * * /var/www/Site_LiaLean/scripts/backup-database.sh
 ```
 
 ## 🆘 Problemas Comuns
 
 ### Aplicação não inicia
 ```bash
-pm2 logs leanlia --lines 50
+pm2 logs lialean --lines 50
 ```
 
 ### Erro de conexão com MySQL
 ```bash
-mysql -u leanlia_user -p leanlia_db
+mysql -u lialean_user -p lialean_db
 ```
 
 ### Erro 502 no Nginx
@@ -178,8 +178,8 @@ pm2 status
 
 ## 📞 Suporte
 
-- **Email**: contato@leanlia.com
-- **GitHub**: https://github.com/AgroIAActionPlan/Site_LeanLia/issues
+- **Email**: contato@lialean.com
+- **GitHub**: https://github.com/AgroIAActionPlan/Site_LiaLean/issues
 
 ---
 

@@ -1,6 +1,6 @@
-# Guia de Deploy - Site LeanLia
+# Guia de Deploy - Site LiaLean
 
-Este documento fornece instruções completas para publicar o site LeanLia em seu servidor de produção com banco de dados MySQL próprio.
+Este documento fornece instruções completas para publicar o site LiaLean em seu servidor de produção com banco de dados MySQL próprio.
 
 ## 📋 Pré-requisitos
 
@@ -11,7 +11,7 @@ Antes de iniciar, certifique-se de que seu servidor possui:
 - **MySQL** versão 8.0 ou superior
 - **Git** instalado
 - **Acesso SSH** ao servidor
-- **Domínio configurado** (ex: leanlia.com)
+- **Domínio configurado** (ex: lialean.com)
 
 ## 🚀 Passo a Passo de Deploy
 
@@ -48,10 +48,10 @@ pnpm --version
 cd /var/www  # ou outro diretório de sua preferência
 
 # Clonar o repositório
-git clone https://github.com/AgroIAActionPlan/Site_LeanLia.git
+git clone https://github.com/AgroIAActionPlan/Site_LiaLean.git
 
 # Entrar no diretório
-cd Site_LeanLia
+cd Site_LiaLean
 ```
 
 ### 3. Configurar o Banco de Dados MySQL
@@ -68,13 +68,13 @@ Execute os seguintes comandos SQL:
 
 ```sql
 -- Criar banco de dados
-CREATE DATABASE leanlia_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE lialean_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Criar usuário dedicado (recomendado)
-CREATE USER 'leanlia_user'@'localhost' IDENTIFIED BY 'SUA_SENHA_SEGURA_AQUI';
+CREATE USER 'lialean_user'@'localhost' IDENTIFIED BY 'SUA_SENHA_SEGURA_AQUI';
 
 -- Conceder permissões
-GRANT ALL PRIVILEGES ON leanlia_db.* TO 'leanlia_user'@'localhost';
+GRANT ALL PRIVILEGES ON lialean_db.* TO 'lialean_user'@'localhost';
 
 -- Aplicar mudanças
 FLUSH PRIVILEGES;
@@ -118,7 +118,7 @@ Adicione as seguintes variáveis (ajuste conforme necessário):
 
 ```env
 # Database Configuration
-DATABASE_URL=mysql://leanlia_user:SUA_SENHA_SEGURA_AQUI@localhost:3306/leanlia_db
+DATABASE_URL=mysql://lialean_user:SUA_SENHA_SEGURA_AQUI@localhost:3306/lialean_db
 
 # JWT Secret (gere uma chave segura)
 JWT_SECRET=sua_chave_jwt_super_secreta_aqui_minimo_32_caracteres
@@ -128,13 +128,13 @@ OAUTH_SERVER_URL=https://api.manus.im
 VITE_OAUTH_PORTAL_URL=https://oauth.manus.im
 
 # Application Configuration
-VITE_APP_ID=leanlia
-VITE_APP_TITLE=LeanLia - IA para Agronegócio
+VITE_APP_ID=lialean
+VITE_APP_TITLE=LiaLean - IA para Agronegócio
 VITE_APP_LOGO=/logo.png
 
 # Owner Configuration (opcional)
 OWNER_OPEN_ID=seu_id_aqui
-OWNER_NAME=Admin LeanLia
+OWNER_NAME=Admin LiaLean
 
 # Production Settings
 NODE_ENV=production
@@ -193,7 +193,7 @@ PM2 mantém sua aplicação rodando em background e reinicia automaticamente em 
 npm install -g pm2
 
 # Iniciar aplicação com PM2
-pm2 start npm --name "leanlia" -- start
+pm2 start npm --name "lialean" -- start
 
 # Configurar PM2 para iniciar no boot
 pm2 startup
@@ -203,7 +203,7 @@ pm2 save
 pm2 status
 
 # Ver logs
-pm2 logs leanlia
+pm2 logs lialean
 ```
 
 ### 9. Configurar Nginx como Reverse Proxy
@@ -217,7 +217,7 @@ sudo apt install nginx -y
 Crie o arquivo de configuração:
 
 ```bash
-sudo nano /etc/nginx/sites-available/leanlia
+sudo nano /etc/nginx/sites-available/lialean
 ```
 
 Adicione a seguinte configuração:
@@ -225,11 +225,11 @@ Adicione a seguinte configuração:
 ```nginx
 server {
     listen 80;
-    server_name leanlia.com www.leanlia.com;  # Substitua pelo seu domínio
+    server_name lialean.com www.lialean.com;  # Substitua pelo seu domínio
 
     # Logs
-    access_log /var/log/nginx/leanlia_access.log;
-    error_log /var/log/nginx/leanlia_error.log;
+    access_log /var/log/nginx/lialean_access.log;
+    error_log /var/log/nginx/lialean_error.log;
 
     # Proxy para aplicação Node.js
     location / {
@@ -270,7 +270,7 @@ Ative o site:
 
 ```bash
 # Criar link simbólico
-sudo ln -s /etc/nginx/sites-available/leanlia /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/lialean /etc/nginx/sites-enabled/
 
 # Testar configuração
 sudo nginx -t
@@ -286,7 +286,7 @@ sudo systemctl restart nginx
 sudo apt install certbot python3-certbot-nginx -y
 
 # Obter certificado SSL
-sudo certbot --nginx -d leanlia.com -d www.leanlia.com
+sudo certbot --nginx -d lialean.com -d www.lialean.com
 
 # Renovação automática (já configurada pelo certbot)
 sudo certbot renew --dry-run
@@ -314,7 +314,7 @@ sudo ufw status
 
 ```bash
 # Navegar para o diretório
-cd /var/www/Site_LeanLia
+cd /var/www/Site_LiaLean
 
 # Fazer backup do .env
 cp .env .env.backup
@@ -332,7 +332,7 @@ pnpm db:push
 pnpm build
 
 # Reiniciar aplicação
-pm2 restart leanlia
+pm2 restart lialean
 ```
 
 ### Script de Deploy Automatizado
@@ -348,7 +348,7 @@ Conteúdo do script:
 ```bash
 #!/bin/bash
 
-echo "🚀 Iniciando deploy do Site LeanLia..."
+echo "🚀 Iniciando deploy do Site LiaLean..."
 
 # Backup do .env
 cp .env .env.backup
@@ -371,10 +371,10 @@ pnpm build
 
 # Reiniciar
 echo "♻️  Reiniciando aplicação..."
-pm2 restart leanlia
+pm2 restart lialean
 
 echo "✅ Deploy concluído com sucesso!"
-echo "🌐 Site disponível em: https://leanlia.com"
+echo "🌐 Site disponível em: https://lialean.com"
 ```
 
 Tornar executável:
@@ -395,7 +395,7 @@ Usar:
 
 ```bash
 # Criar backup
-mysqldump -u leanlia_user -p leanlia_db > backup_$(date +%Y%m%d_%H%M%S).sql
+mysqldump -u lialean_user -p lialean_db > backup_$(date +%Y%m%d_%H%M%S).sql
 
 # Compactar backup
 gzip backup_*.sql
@@ -408,7 +408,7 @@ gzip backup_*.sql
 gunzip backup_20241017_120000.sql.gz
 
 # Restaurar
-mysql -u leanlia_user -p leanlia_db < backup_20241017_120000.sql
+mysql -u lialean_user -p lialean_db < backup_20241017_120000.sql
 ```
 
 ### Backup Automático Diário
@@ -416,7 +416,7 @@ mysql -u leanlia_user -p leanlia_db < backup_20241017_120000.sql
 Crie um script de backup:
 
 ```bash
-sudo nano /usr/local/bin/backup-leanlia.sh
+sudo nano /usr/local/bin/backup-lialean.sh
 ```
 
 Conteúdo:
@@ -425,10 +425,10 @@ Conteúdo:
 #!/bin/bash
 
 # Configurações
-DB_USER="leanlia_user"
+DB_USER="lialean_user"
 DB_PASS="SUA_SENHA_AQUI"
-DB_NAME="leanlia_db"
-BACKUP_DIR="/var/backups/leanlia"
+DB_NAME="lialean_db"
+BACKUP_DIR="/var/backups/lialean"
 DATE=$(date +%Y%m%d_%H%M%S)
 
 # Criar diretório se não existir
@@ -446,7 +446,7 @@ echo "Backup concluído: backup_$DATE.sql.gz"
 Tornar executável:
 
 ```bash
-sudo chmod +x /usr/local/bin/backup-leanlia.sh
+sudo chmod +x /usr/local/bin/backup-lialean.sh
 ```
 
 Adicionar ao cron (executar diariamente às 2h):
@@ -458,7 +458,7 @@ sudo crontab -e
 Adicionar linha:
 
 ```
-0 2 * * * /usr/local/bin/backup-leanlia.sh >> /var/log/leanlia-backup.log 2>&1
+0 2 * * * /usr/local/bin/backup-lialean.sh >> /var/log/lialean-backup.log 2>&1
 ```
 
 ## 📊 Monitoramento
@@ -467,11 +467,11 @@ Adicionar linha:
 
 ```bash
 # Ver logs em tempo real
-pm2 logs leanlia
+pm2 logs lialean
 
 # Ver logs do Nginx
-sudo tail -f /var/log/nginx/leanlia_access.log
-sudo tail -f /var/log/nginx/leanlia_error.log
+sudo tail -f /var/log/nginx/lialean_access.log
+sudo tail -f /var/log/nginx/lialean_error.log
 ```
 
 ### Status da Aplicação
@@ -481,7 +481,7 @@ sudo tail -f /var/log/nginx/leanlia_error.log
 pm2 status
 
 # Informações detalhadas
-pm2 info leanlia
+pm2 info lialean
 
 # Monitoramento em tempo real
 pm2 monit
@@ -530,13 +530,13 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 ```bash
 # Verificar logs
-pm2 logs leanlia --lines 100
+pm2 logs lialean --lines 100
 
 # Verificar se porta 3000 está em uso
 sudo lsof -i :3000
 
 # Reiniciar aplicação
-pm2 restart leanlia
+pm2 restart lialean
 ```
 
 ### Erro de conexão com MySQL
@@ -546,10 +546,10 @@ pm2 restart leanlia
 sudo systemctl status mysql
 
 # Testar conexão
-mysql -u leanlia_user -p leanlia_db
+mysql -u lialean_user -p lialean_db
 
 # Verificar permissões
-mysql -u root -p -e "SHOW GRANTS FOR 'leanlia_user'@'localhost';"
+mysql -u root -p -e "SHOW GRANTS FOR 'lialean_user'@'localhost';"
 ```
 
 ### Erro 502 Bad Gateway (Nginx)
@@ -579,8 +579,8 @@ sudo certbot certificates
 
 Para problemas ou dúvidas:
 
-- **Email**: contato@leanlia.com
-- **GitHub Issues**: https://github.com/AgroIAActionPlan/Site_LeanLia/issues
+- **Email**: contato@lialean.com
+- **GitHub Issues**: https://github.com/AgroIAActionPlan/Site_LiaLean/issues
 
 ## 📝 Checklist de Deploy
 

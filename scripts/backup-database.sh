@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # ============================================
-# Script de Backup do Banco de Dados - LeanLia
+# Script de Backup do Banco de Dados - LiaLean
 # ============================================
 #
 # Este script cria backups automáticos do banco
-# de dados MySQL do site LeanLia.
+# de dados MySQL do site LiaLean.
 #
 # Uso: ./scripts/backup-database.sh
 # Cron: 0 2 * * * /caminho/para/backup-database.sh
@@ -48,7 +48,7 @@ log_error() {
 
 # Banner
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${BLUE}  Backup do Banco de Dados - LeanLia${NC}"
+echo -e "${BLUE}  Backup do Banco de Dados - LiaLean${NC}"
 echo -e "${BLUE}  $DATE_READABLE${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 

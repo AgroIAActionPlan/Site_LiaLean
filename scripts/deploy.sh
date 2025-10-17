@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # ============================================
-# Script de Deploy Automatizado - Site LeanLia
+# Script de Deploy Automatizado - Site LiaLean
 # ============================================
 #
 # Este script automatiza o processo de deploy
-# do site LeanLia em ambiente de produção.
+# do site LiaLean em ambiente de produção.
 #
 # Uso: ./scripts/deploy.sh
 #
@@ -48,7 +48,7 @@ echo -e "${GREEN}"
 cat << "EOF"
 ╔═══════════════════════════════════════╗
 ║                                       ║
-║      🚀 Deploy Site LeanLia 🚀       ║
+║      🚀 Deploy Site LiaLean 🚀       ║
 ║                                       ║
 ╚═══════════════════════════════════════╝
 EOF
@@ -173,13 +173,13 @@ if command -v pm2 &> /dev/null; then
     print_info "Reiniciando com PM2..."
     
     # Verificar se processo existe
-    if pm2 list | grep -q "leanlia"; then
-        pm2 restart leanlia
+    if pm2 list | grep -q "lialean"; then
+        pm2 restart lialean
         print_success "Aplicação reiniciada!"
     else
-        print_warning "Processo 'leanlia' não encontrado no PM2"
+        print_warning "Processo 'lialean' não encontrado no PM2"
         print_info "Iniciando nova instância..."
-        pm2 start npm --name "leanlia" -- start
+        pm2 start npm --name "lialean" -- start
         pm2 save
         print_success "Aplicação iniciada!"
     fi
@@ -209,7 +209,7 @@ if curl -s -o /dev/null -w "%{http_code}" http://localhost:$PORT | grep -q "200\
     print_success "Aplicação está respondendo na porta $PORT!"
 else
     print_warning "Aplicação pode não estar respondendo corretamente"
-    print_info "Verifique os logs com: pm2 logs leanlia"
+    print_info "Verifique os logs com: pm2 logs lialean"
 fi
 
 # ============================================
@@ -240,12 +240,12 @@ cat << EOF
 ║     • Porta: $PORT
 ║                                                   ║
 ║  📝 Próximos passos:                              ║
-║     1. Verifique os logs: pm2 logs leanlia        ║
+║     1. Verifique os logs: pm2 logs lialean        ║
 ║     2. Teste o site no navegador                  ║
 ║     3. Monitore por alguns minutos                ║
 ║                                                   ║
 ║  🔗 Links úteis:                                  ║
-║     • Logs: pm2 logs leanlia                      ║
+║     • Logs: pm2 logs lialean                      ║
 ║     • Status: pm2 status                          ║
 ║     • Monit: pm2 monit                            ║
 ║                                                   ║
@@ -254,12 +254,12 @@ EOF
 echo -e "${NC}"
 
 print_info "Backup criado em: $BACKUP_DIR"
-print_info "Logs da aplicação: pm2 logs leanlia"
+print_info "Logs da aplicação: pm2 logs lialean"
 
 # Mostrar últimas linhas do log
 if command -v pm2 &> /dev/null; then
     print_info "Últimas linhas do log:"
-    pm2 logs leanlia --lines 10 --nostream
+    pm2 logs lialean --lines 10 --nostream
 fi
 
 exit 0

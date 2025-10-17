@@ -1,9 +1,9 @@
 -- ============================================
--- Schema do Banco de Dados - Site LeanLia
+-- Schema do Banco de Dados - Site LiaLean
 -- ============================================
 -- 
 -- Este arquivo contém o schema completo do banco de dados
--- para o site LeanLia. Execute este script em seu MySQL
+-- para o site LiaLean. Execute este script em seu MySQL
 -- para criar a estrutura necessária.
 --
 -- Versão: 1.0
@@ -11,12 +11,12 @@
 -- ============================================
 
 -- Criar banco de dados (se não existir)
-CREATE DATABASE IF NOT EXISTS leanlia_db 
+CREATE DATABASE IF NOT EXISTS lialean_db 
 CHARACTER SET utf8mb4 
 COLLATE utf8mb4_unicode_ci;
 
 -- Usar o banco de dados
-USE leanlia_db;
+USE lialean_db;
 
 -- ============================================
 -- Tabela: users
@@ -125,7 +125,7 @@ CREATE INDEX idx_audit_entity ON audit_log(entity, entityId);
 -- ou usar um script de seed apropriado com senhas hasheadas
 
 -- INSERT INTO users (id, name, email, loginMethod, role) VALUES
--- ('admin-001', 'Administrador LeanLia', 'admin@leanlia.com', 'oauth', 'admin');
+-- ('admin-001', 'Administrador LiaLean', 'admin@lialean.com', 'oauth', 'admin');
 
 -- ============================================
 -- Procedures e Functions (Opcional)
@@ -192,11 +192,11 @@ ORDER BY createdAt DESC;
 -- Criar usuário da aplicação (se ainda não existir)
 -- Nota: Altere 'SUA_SENHA_SEGURA_AQUI' para uma senha forte
 
--- CREATE USER IF NOT EXISTS 'leanlia_user'@'localhost' IDENTIFIED BY 'SUA_SENHA_SEGURA_AQUI';
+-- CREATE USER IF NOT EXISTS 'lialean_user'@'localhost' IDENTIFIED BY 'SUA_SENHA_SEGURA_AQUI';
 
 -- Conceder permissões necessárias
--- GRANT SELECT, INSERT, UPDATE, DELETE ON leanlia_db.* TO 'leanlia_user'@'localhost';
--- GRANT EXECUTE ON PROCEDURE leanlia_db.cleanup_expired_sessions TO 'leanlia_user'@'localhost';
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON lialean_db.* TO 'lialean_user'@'localhost';
+-- GRANT EXECUTE ON PROCEDURE lialean_db.cleanup_expired_sessions TO 'lialean_user'@'localhost';
 
 -- Aplicar mudanças
 -- FLUSH PRIVILEGES;
