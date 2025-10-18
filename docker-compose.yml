@@ -1,0 +1,189 @@
+version: '3.8'
+
+# ============================================
+# Docker Compose - Site LiaLean (Produção)
+# ============================================
+#
+# Este arquivo define os serviços para rodar o site LiaLean
+# em produção com Docker + Traefik + PostgreSQL.
+#
+# Uso:
+#   docker-compose --profile pg up -d
+#
+# Pré-requisitos:
+#   - Rede 'proxy' criada: docker network create proxy
+#   - Traefik rodando e conectado à rede 'proxy'
+#   - Arquivo .env configurado
+#
+# ============================================
+
+services:
+  # ============================================
+  # Aplicação (Frontend + Backend)
+  # ============================================
+  app:
+    image: lialean/site:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lialean-app
+    restart: unless-stopped
+    
+    # Variáveis de ambiente
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOST=0.0.0.0
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - VITE_APP_ID=${VITE_APP_ID:-lialean}
+      - VITE_APP_TITLE=${VITE_APP_TITLE:-LiaLean - IA para Agronegócio}
+      - VITE_APP_LOGO=${VITE_APP_LOGO:-/logo.png}
+      - OWNER_NAME=${OWNER_NAME:-Admin LiaLean}
+      - OWNER_OPEN_ID=${OWNER_OPEN_ID:-}
+      - OAUTH_SERVER_URL=${OAUTH_SERVER_URL:-}
+      - VITE_OAUTH_PORTAL_URL=${VITE_OAUTH_PORTAL_URL:-}
+      - BUILT_IN_FORGE_API_URL=${BUILT_IN_FORGE_API_URL:-}
+      - BUILT_IN_FORGE_API_KEY=${BUILT_IN_FORGE_API_KEY:-}
+      - VITE_ANALYTICS_ENDPOINT=${VITE_ANALYTICS_ENDPOINT:-}
+      - VITE_ANALYTICS_WEBSITE_ID=${VITE_ANALYTICS_WEBSITE_ID:-}
+    
+    # Redes
+    networks:
+      - proxy
+      - internal
+    
+    # Dependências
+    depends_on:
+      db:
+        condition: service_healthy
+    
+    # Labels do Traefik
+    labels:
+      # Habilitar Traefik
+      - "traefik.enable=true"
+      
+      # Rede
+      - "traefik.docker.network=proxy"
+      
+      # ==========================================
+      # Router Principal (HTTPS)
+      # ==========================================
+      - "traefik.http.routers.lialean-app.rule=Host(`app.vps.lialean.cloud`)"
+      - "traefik.http.routers.lialean-app.entrypoints=websecure"
+      - "traefik.http.routers.lialean-app.tls=true"
+      - "traefik.http.routers.lialean-app.tls.certresolver=le"
+      
+      # Service
+      - "traefik.http.services.lialean-app.loadbalancer.server.port=3000"
+      
+      # Middleware (opcional - adicione se necessário)
+      # - "traefik.http.routers.lialean-app.middlewares=lialean-compress,lialean-ratelimit"
+      
+      # ==========================================
+      # Redirect HTTP -> HTTPS
+      # ==========================================
+      - "traefik.http.routers.lialean-app-http.rule=Host(`app.vps.lialean.cloud`)"
+      - "traefik.http.routers.lialean-app-http.entrypoints=web"
+      - "traefik.http.routers.lialean-app-http.middlewares=redirect-to-https"
+      
+      # ==========================================
+      # Middlewares (opcional)
+      # ==========================================
+      # Compressão
+      # - "traefik.http.middlewares.lialean-compress.compress=true"
+      
+      # Rate Limiting
+      # - "traefik.http.middlewares.lialean-ratelimit.ratelimit.average=100"
+      # - "traefik.http.middlewares.lialean-ratelimit.ratelimit.burst=50"
+      
+      # Redirect HTTPS
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ============================================
+  # PostgreSQL Database
+  # ============================================
+  db:
+    image: postgres:15-alpine
+    container_name: lialean-db
+    restart: unless-stopped
+    profiles:
+      - pg
+    
+    # Variáveis de ambiente
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-appuser}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB:-lialean_db}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    
+    # Volumes
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema_postgresql.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    
+    # Redes
+    networks:
+      - internal
+    
+    # Porta (apenas para acesso interno)
+    # Descomente se precisar acessar de fora
+    # ports:
+    #   - "5432:5432"
+    
+    # Health check
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-appuser} -d ${POSTGRES_DB:-lialean_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    
+    # Configurações de performance (opcional)
+    command: >
+      postgres
+      -c shared_buffers=256MB
+      -c max_connections=200
+      -c effective_cache_size=1GB
+      -c maintenance_work_mem=64MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c work_mem=1MB
+      -c min_wal_size=1GB
+      -c max_wal_size=4GB
+
+# ============================================
+# Redes
+# ============================================
+networks:
+  # Rede externa (Traefik)
+  proxy:
+    external: true
+    name: proxy
+  
+  # Rede interna (app <-> db)
+  internal:
+    driver: bridge
+    internal: true
+
+# ============================================
+# Volumes
+# ============================================
+volumes:
+  # Dados do PostgreSQL
+  postgres_data:
+    driver: local
+    name: lialean_postgres_data
+

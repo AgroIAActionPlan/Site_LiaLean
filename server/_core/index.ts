@@ -30,9 +30,22 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+  
+  // IMPORTANT: Trust proxy (Traefik, Nginx, etc)
+  // This enables:
+  // - Correct client IP in req.ip
+  // - Secure cookies over HTTPS
+  // - X-Forwarded-* headers
+  app.set('trust proxy', 1);
+  
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  
+  // Health check endpoint (for Docker healthcheck and monitoring)
+  app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   // tRPC API

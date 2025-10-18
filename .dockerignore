@@ -1,0 +1,114 @@
+# ============================================
+# .dockerignore - Site LiaLean
+# ============================================
+# 
+# Arquivos e diretórios que NÃO devem ser copiados
+# para a imagem Docker durante o build.
+# ============================================
+
+# Dependências (serão instaladas no container)
+node_modules/
+.pnpm-store/
+
+# Arquivos de build (serão gerados no container)
+dist/
+client/dist/
+*.tsbuildinfo
+
+# Arquivos de desenvolvimento
+.git/
+.github/
+.vscode/
+.idea/
+
+# Arquivos de ambiente (nunca incluir em imagens)
+.env
+.env.*
+!.env.example
+.env.local
+.env.production
+.env.development
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Arquivos temporários
+tmp/
+temp/
+*.tmp
+*.swp
+*.swo
+*~
+
+# Arquivos de teste
+coverage/
+.nyc_output/
+test-results/
+*.test.ts
+*.spec.ts
+__tests__/
+__mocks__/
+
+# Documentação (não necessária em produção)
+*.md
+!README.md
+docs/
+GUIA_*.md
+CHANGELOG*.md
+MIGRACAO*.md
+RESPOSTAS*.md
+
+# Backups
+backups/
+*.backup
+*.bak
+*.sql
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# CI/CD
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+.github/workflows/
+
+# Patches
+patches/
+
+# Scripts de desenvolvimento
+scripts/backup-database.sh
+scripts/deploy.sh
+
+# Arquivos grandes desnecessários
+*.mp4
+*.avi
+*.mov
+*.wmv
+*.flv
+*.zip
+*.tar
+*.gz
+*.rar
+*.7z
+
+# Certificados e chaves (NUNCA incluir)
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+
