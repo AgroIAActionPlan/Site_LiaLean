@@ -56,8 +56,8 @@ RUN addgroup -g 1001 -S nodejs && \
 # Definir diretório de trabalho
 WORKDIR /app
 
-# Copiar package.json e pnpm-lock.yaml
-COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
+# Copiar arquivos de dependências e patches
+COPY --from=builder /app/package.json /app/pnpm-lock.yaml /app/patches ./
 
 # Instalar apenas dependências de produção
 RUN pnpm install --prod --frozen-lockfile
