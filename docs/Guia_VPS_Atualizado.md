@@ -601,7 +601,7 @@ volumes:
 
 ---
 
-## Fase 9 – Subir a stack
+## Fase 9 – Subir a stack (fiz uma atualização) ....
 
 Todos os comandos desta fase devem ser executados como usuário `deploy` dentro de `/opt/lialean/stacks`.
 
