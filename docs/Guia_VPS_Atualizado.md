@@ -368,11 +368,9 @@ chmod 600 /opt/lialean/stacks/letsencrypt/acme.json
 
 ### 8.2 Criar `lialean-stack.yml`
 
-Arquivo `/opt/lialean/stacks/lialean-stack.yml`:
+Arquivo `/opt/lialean/stacks/lialean-stack.yml` (observe que não usamos mais a chave `version`, pois ela foi descontinuada no Compose v2):
 
 ```yaml
-version: "3.9"
-
 services:
   traefik:
     image: traefik:v3.1
