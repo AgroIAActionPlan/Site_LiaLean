@@ -26,6 +26,8 @@ WORKDIR /app
 
 # Copiar arquivos de dependências
 COPY package.json pnpm-lock.yaml ./
+# pnpm precisa do diretório de patches antes da instalação
+COPY patches ./patches
 
 # Instalar dependências
 RUN pnpm install --frozen-lockfile
@@ -86,4 +88,3 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 
 # Comando para iniciar a aplicação
 CMD ["node", "dist/index.js"]
-
