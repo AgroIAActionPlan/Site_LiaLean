@@ -27,9 +27,10 @@ Website completo e responsivo para a LiaLean - Consultoria de Inteligência Arti
 - **Frontend**: React 19 + TypeScript
 - **Styling**: Tailwind CSS 4 + shadcn/ui
 - **Backend**: Express 4 + tRPC 11
-- **Database**: MySQL (via Drizzle ORM)
+- **Database**: PostgreSQL 16 (via Drizzle ORM)
 - **Auth**: Manus OAuth (configurável)
 - **Build**: Vite
+- **Infraestrutura**: Docker + Traefik + Portainer, fila Redis e N8N para automações
 
 ## 📦 Instalação Local (Desenvolvimento)
 
@@ -39,6 +40,9 @@ pnpm install
 
 # Configurar variáveis de ambiente
 cp .env.example .env
+
+# Subir o PostgreSQL local (usa serviço do docker-compose)
+docker compose --profile pg up -d
 
 # Rodar migrações do banco de dados
 pnpm db:push
@@ -51,9 +55,10 @@ pnpm dev
 
 Para publicar o site em seu servidor:
 
+- **Guia atualizado da VPS + Docker/Portainer**: [docs/Novo_Projeto_Site.md](./docs/Novo_Projeto_Site.md)
 - **Guia Rápido (5 minutos)**: [QUICK_START.md](./QUICK_START.md)
 - **Guia Completo (passo a passo)**: [DEPLOY.md](./DEPLOY.md)
-- **Schema do Banco**: [database/schema.sql](./database/schema.sql)
+- **Schema do Banco (PostgreSQL)**: [database/schema_postgresql.sql](./database/schema_postgresql.sql)
 - **Script de Deploy Automatizado**: [scripts/deploy.sh](./scripts/deploy.sh)
 - **Script de Backup**: [scripts/backup-database.sh](./scripts/backup-database.sh)
 
@@ -140,6 +145,7 @@ pnpm dev          # Iniciar servidor de desenvolvimento
 pnpm build        # Compilar para produção
 pnpm start        # Iniciar servidor de produção
 pnpm db:push      # Aplicar migrações do banco
+docker compose --profile pg up -d   # Subir PostgreSQL local
 
 # Deploy e Manutenção
 ./scripts/deploy.sh              # Deploy automatizado
@@ -165,4 +171,3 @@ pnpm db:push      # Aplicar migrações do banco
 ## 📄 Licença
 
 © 2024 LiaLean. Todos os direitos reservados.
-

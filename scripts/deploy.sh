@@ -1,266 +1,194 @@
 #!/bin/bash
 
-# ============================================
-# Script de Deploy Automatizado - Site LiaLean
-# ============================================
-#
-# Este script automatiza o processo de deploy
-# do site LiaLean em ambiente de produção.
-#
-# Uso: ./scripts/deploy.sh
-#
-# ============================================
+# Deploy automatizado da aplicação via Docker.
+# Este script gera uma nova imagem, opcionalmente envia para o registry
+# e pode atualizar a stack local usando docker compose.
 
-set -e  # Parar em caso de erro
+set -euo pipefail
 
-# Cores para output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+trap 'printf "\n[ERRO] Falha inesperada. Revise as mensagens acima.\n" >&2' ERR
 
-# Funções auxiliares
-print_info() {
-    echo -e "${BLUE}ℹ️  $1${NC}"
+ENV_FILE="${1:-${ENV_FILE:-.env}}"
+
+INFO_COLOR="\033[0;34m"
+SUCCESS_COLOR="\033[0;32m"
+WARN_COLOR="\033[0;33m"
+ERROR_COLOR="\033[0;31m"
+RESET_COLOR="\033[0m"
+
+info() {
+  printf "\n${INFO_COLOR}[INFO] %s${RESET_COLOR}\n" "$1"
 }
 
-print_success() {
-    echo -e "${GREEN}✅ $1${NC}"
+success() {
+  printf "\n${SUCCESS_COLOR}[OK] %s${RESET_COLOR}\n" "$1"
 }
 
-print_warning() {
-    echo -e "${YELLOW}⚠️  $1${NC}"
+warn() {
+  printf "\n${WARN_COLOR}[AVISO] %s${RESET_COLOR}\n" "$1"
 }
 
-print_error() {
-    echo -e "${RED}❌ $1${NC}"
+error() {
+  printf "\n${ERROR_COLOR}[ERRO] %s${RESET_COLOR}\n" "$1" >&2
 }
 
-print_step() {
-    echo -e "\n${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${BLUE}$1${NC}"
-    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
-}
+REQUIRED_VARS=(
+  DOMAIN_APP
+  DOMAIN_N8N
+  TRAEFIK_ACME_EMAIL
+  TIMEZONE
+  POSTGRES_USER
+  POSTGRES_PASSWORD
+  POSTGRES_APP_DB
+  APP_DB_USER
+  APP_DB_PASSWORD
+  N8N_DB_NAME
+  N8N_DB_USER
+  N8N_DB_PASSWORD
+  DATABASE_URL
+  JWT_SECRET
+  VITE_APP_ID
+  VITE_APP_TITLE
+  VITE_APP_LOGO
+  OWNER_NAME
+  OWNER_OPEN_ID
+  OAUTH_SERVER_URL
+  VITE_OAUTH_PORTAL_URL
+  BUILT_IN_FORGE_API_URL
+  BUILT_IN_FORGE_API_KEY
+  VITE_ANALYTICS_ENDPOINT
+  VITE_ANALYTICS_WEBSITE_ID
+  N8N_BASIC_USER
+  N8N_BASIC_PASS
+  N8N_ENCRYPTION_KEY
+  N8N_WORKER_CONCURRENCY
+  APP_IMAGE
+)
 
-# Banner
-echo -e "${GREEN}"
-cat << "EOF"
-╔═══════════════════════════════════════╗
-║                                       ║
-║      🚀 Deploy Site LiaLean 🚀       ║
-║                                       ║
-╚═══════════════════════════════════════╝
-EOF
-echo -e "${NC}"
+NEEDS_VALUE=(
+  POSTGRES_PASSWORD
+  APP_DB_PASSWORD
+  N8N_DB_PASSWORD
+  DATABASE_URL
+  JWT_SECRET
+  N8N_BASIC_PASS
+  N8N_ENCRYPTION_KEY
+  APP_IMAGE
+)
 
-# Verificar se está no diretório correto
 if [ ! -f "package.json" ]; then
-    print_error "Este script deve ser executado na raiz do projeto!"
-    exit 1
+  error "Execute este script a partir da raiz do projeto (onde fica package.json)."
+  exit 1
 fi
 
-# Verificar se .env existe
-if [ ! -f ".env" ]; then
-    print_error "Arquivo .env não encontrado!"
-    print_info "Copie .env.production.example para .env e configure as variáveis"
-    print_info "Comando: cp .env.production.example .env"
-    exit 1
+if ! command -v docker >/dev/null 2>&1; then
+  error "Docker não encontrado. Instale o Docker antes de prosseguir."
+  exit 1
 fi
 
-# Confirmar deploy
-print_warning "Você está prestes a fazer deploy em PRODUÇÃO!"
-read -p "Deseja continuar? (s/N): " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Ss]$ ]]; then
-    print_info "Deploy cancelado."
-    exit 0
+if ! docker compose version >/dev/null 2>&1; then
+  error "Docker Compose v2 não encontrado. Atualize o Docker/CLI."
+  exit 1
 fi
 
-# ============================================
-# STEP 1: Backup do .env
-# ============================================
-print_step "STEP 1: Fazendo backup do arquivo .env"
-
-BACKUP_DIR="backups"
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-
-mkdir -p $BACKUP_DIR
-cp .env "$BACKUP_DIR/.env.backup.$TIMESTAMP"
-print_success "Backup criado: $BACKUP_DIR/.env.backup.$TIMESTAMP"
-
-# ============================================
-# STEP 2: Atualizar código do repositório
-# ============================================
-print_step "STEP 2: Atualizando código do repositório"
-
-print_info "Verificando branch atual..."
-CURRENT_BRANCH=$(git branch --show-current)
-print_info "Branch: $CURRENT_BRANCH"
-
-print_info "Fazendo pull das últimas alterações..."
-git pull origin $CURRENT_BRANCH
-
-print_success "Código atualizado!"
-
-# ============================================
-# STEP 3: Instalar dependências
-# ============================================
-print_step "STEP 3: Instalando dependências"
-
-print_info "Verificando pnpm..."
-if ! command -v pnpm &> /dev/null; then
-    print_error "pnpm não encontrado! Instalando..."
-    npm install -g pnpm
+if [ ! -f "$ENV_FILE" ]; then
+  error "Arquivo de variáveis $ENV_FILE não encontrado."
+  exit 1
 fi
 
-print_info "Instalando dependências do projeto..."
-pnpm install --frozen-lockfile
+info "Validando variáveis obrigatórias em $ENV_FILE"
 
-print_success "Dependências instaladas!"
+missing_vars=()
+empty_vars=()
+app_image_raw=""
 
-# ============================================
-# STEP 4: Aplicar migrações do banco de dados
-# ============================================
-print_step "STEP 4: Aplicando migrações do banco de dados"
+for var in "${REQUIRED_VARS[@]}"; do
+  line=$(grep -E "^${var}=" "$ENV_FILE" | tail -n1 || true)
+  if [ -z "$line" ]; then
+    missing_vars+=("$var")
+    continue
+  fi
+  value=${line#*=}
+  value=${value%$'\r'}
+  trimmed=$(printf "%s" "$value" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
 
-print_warning "Fazendo backup do banco antes das migrações..."
-
-# Extrair credenciais do DATABASE_URL
-DB_URL=$(grep DATABASE_URL .env | cut -d '=' -f2)
-
-if [[ $DB_URL =~ mysql://([^:]+):([^@]+)@([^:]+):([^/]+)/(.+) ]]; then
-    DB_USER="${BASH_REMATCH[1]}"
-    DB_PASS="${BASH_REMATCH[2]}"
-    DB_HOST="${BASH_REMATCH[3]}"
-    DB_PORT="${BASH_REMATCH[4]}"
-    DB_NAME="${BASH_REMATCH[5]}"
-    
-    print_info "Criando backup do banco: $DB_NAME"
-    mkdir -p $BACKUP_DIR/database
-    mysqldump -h $DB_HOST -P $DB_PORT -u $DB_USER -p$DB_PASS $DB_NAME | gzip > "$BACKUP_DIR/database/backup_$TIMESTAMP.sql.gz"
-    print_success "Backup do banco criado!"
-else
-    print_warning "Não foi possível fazer backup automático do banco"
-    print_warning "Faça backup manual antes de continuar!"
-    read -p "Pressione ENTER para continuar..."
-fi
-
-print_info "Aplicando migrações..."
-pnpm db:push
-
-print_success "Migrações aplicadas!"
-
-# ============================================
-# STEP 5: Build da aplicação
-# ============================================
-print_step "STEP 5: Compilando aplicação para produção"
-
-print_info "Limpando builds anteriores..."
-rm -rf client/dist server/dist
-
-print_info "Executando build..."
-pnpm build
-
-print_success "Build concluído!"
-
-# ============================================
-# STEP 6: Reiniciar aplicação
-# ============================================
-print_step "STEP 6: Reiniciando aplicação"
-
-if command -v pm2 &> /dev/null; then
-    print_info "Reiniciando com PM2..."
-    
-    # Verificar se processo existe
-    if pm2 list | grep -q "lialean"; then
-        pm2 restart lialean
-        print_success "Aplicação reiniciada!"
-    else
-        print_warning "Processo 'lialean' não encontrado no PM2"
-        print_info "Iniciando nova instância..."
-        pm2 start npm --name "lialean" -- start
-        pm2 save
-        print_success "Aplicação iniciada!"
+  for must_have in "${NEEDS_VALUE[@]}"; do
+    if [ "$var" = "$must_have" ] && [ -z "$trimmed" ]; then
+      empty_vars+=("$var")
+      break
     fi
-    
-    # Mostrar status
-    pm2 list
-    
+  done
+
+  if [ "$var" = "APP_IMAGE" ]; then
+    app_image_raw="$trimmed"
+  fi
+done
+
+if [ ${#missing_vars[@]} -gt 0 ]; then
+  error "Variáveis ausentes em $ENV_FILE:"
+  for var in "${missing_vars[@]}"; do
+    printf "  - %s\n" "$var" >&2
+  done
+  exit 1
+fi
+
+if [ ${#empty_vars[@]} -gt 0 ]; then
+  warn "As variáveis abaixo estão vazias. Atualize antes do deploy:"
+  for var in "${empty_vars[@]}"; do
+    printf "  - %s\n" "$var"
+  done
+fi
+
+if [ -z "$app_image_raw" ]; then
+  warn "APP_IMAGE não definido. Usando lialean/site:latest."
+  app_image_raw="lialean/site:latest"
+fi
+
+if [[ "$app_image_raw" == *:* ]]; then
+  base_image="${app_image_raw%:*}"
+  default_tag="${app_image_raw##*:}"
 else
-    print_warning "PM2 não encontrado!"
-    print_info "Instale PM2 com: npm install -g pm2"
-    print_info "Ou inicie manualmente com: pnpm start"
+  base_image="$app_image_raw"
+  default_tag="latest"
 fi
 
-# ============================================
-# STEP 7: Verificar saúde da aplicação
-# ============================================
-print_step "STEP 7: Verificando saúde da aplicação"
+printf "\nImagem base detectada: %s\n" "$base_image"
+read -r -p "Informe a nova tag da imagem (ENTER para ${default_tag}): " chosen_tag
+image_tag=${chosen_tag:-$default_tag}
+image_name="${base_image}:${image_tag}"
 
-print_info "Aguardando aplicação iniciar..."
-sleep 5
+info "Etapa 1/3: Build da imagem Docker (${image_name})"
+docker build -t "$image_name" .
+success "Imagem gerada localmente."
 
-# Verificar se está respondendo
-PORT=$(grep PORT .env | cut -d '=' -f2)
-PORT=${PORT:-3000}
-
-if curl -s -o /dev/null -w "%{http_code}" http://localhost:$PORT | grep -q "200\|301\|302"; then
-    print_success "Aplicação está respondendo na porta $PORT!"
+read -r -p "Deseja enviar a imagem para o registry com docker push? (s/N): " push_choice
+if [[ "$push_choice" =~ ^[sS]$ ]]; then
+  info "Etapa 2/3: Enviando imagem para o registry"
+  docker push "$image_name"
+  success "Imagem enviada com sucesso."
 else
-    print_warning "Aplicação pode não estar respondendo corretamente"
-    print_info "Verifique os logs com: pm2 logs lialean"
+  info "Envio com docker push pulado a pedido do usuário."
 fi
 
-# ============================================
-# STEP 8: Limpar arquivos antigos
-# ============================================
-print_step "STEP 8: Limpeza de arquivos antigos"
-
-print_info "Limpando backups antigos (mantendo últimos 30 dias)..."
-find $BACKUP_DIR -name "*.backup.*" -mtime +30 -delete 2>/dev/null || true
-find $BACKUP_DIR/database -name "backup_*.sql.gz" -mtime +30 -delete 2>/dev/null || true
-
-print_success "Limpeza concluída!"
-
-# ============================================
-# Resumo Final
-# ============================================
-print_step "✨ Deploy Concluído com Sucesso! ✨"
-
-echo -e "${GREEN}"
-cat << EOF
-╔═══════════════════════════════════════════════════╗
-║                                                   ║
-║  ✅ Deploy realizado com sucesso!                ║
-║                                                   ║
-║  📊 Informações:                                  ║
-║     • Branch: $CURRENT_BRANCH
-║     • Timestamp: $TIMESTAMP
-║     • Porta: $PORT
-║                                                   ║
-║  📝 Próximos passos:                              ║
-║     1. Verifique os logs: pm2 logs lialean        ║
-║     2. Teste o site no navegador                  ║
-║     3. Monitore por alguns minutos                ║
-║                                                   ║
-║  🔗 Links úteis:                                  ║
-║     • Logs: pm2 logs lialean                      ║
-║     • Status: pm2 status                          ║
-║     • Monit: pm2 monit                            ║
-║                                                   ║
-╚═══════════════════════════════════════════════════╝
-EOF
-echo -e "${NC}"
-
-print_info "Backup criado em: $BACKUP_DIR"
-print_info "Logs da aplicação: pm2 logs lialean"
-
-# Mostrar últimas linhas do log
-if command -v pm2 &> /dev/null; then
-    print_info "Últimas linhas do log:"
-    pm2 logs lialean --lines 10 --nostream
+read -r -p "Deseja atualizar a stack local usando docker compose agora? (s/N): " compose_choice
+if [[ "$compose_choice" =~ ^[sS]$ ]]; then
+  info "Etapa 3/3: Atualizando containers com docker compose"
+  docker compose --env-file "$ENV_FILE" up -d --force-recreate app
+  docker compose --env-file "$ENV_FILE" ps app
+  success "Stack atualizada localmente."
+else
+  info "Atualização com docker compose não executada."
 fi
 
-exit 0
+printf "\nResumo:\n"
+printf "  • Arquivo de variáveis: %s\n" "$ENV_FILE"
+printf "  • Imagem construída:    %s\n" "$image_name"
+printf "  • docker push:          %s\n" "$( [[ "$push_choice" =~ ^[sS]$ ]] && echo 'executado' || echo 'não executado' )"
+printf "  • docker compose:       %s\n" "$( [[ "$compose_choice" =~ ^[sS]$ ]] && echo 'executado' || echo 'não executado' )"
 
+printf "\nPróximos passos recomendados:\n"
+printf "  1. Caso tenha feito docker push, atualize a stack no Portainer apontando para a tag %s.\n" "$image_tag"
+printf "  2. Valide os serviços acessando /health e o painel do n8n.\n"
+printf "  3. Mantenha os backups e revisões da documentação em dia.\n"
+
+success "Processo finalizado."
