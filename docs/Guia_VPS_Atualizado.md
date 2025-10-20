@@ -603,27 +603,69 @@ volumes:
 
 ## Fase 9 – Subir a stack
 
-Execute como `deploy`:
+Todos os comandos desta fase devem ser executados como usuário `deploy` dentro de `/opt/lialean/stacks`.
+
+### 9.1 Checagens antes de subir
 
 ```bash
 cd /opt/lialean/stacks
-docker compose --env-file lialean.env -f lialean-stack.yml up -d
+if grep -n "CHANGE_ME" lialean.env; then echo "↑ Substitua os valores acima no arquivo lialean.env"; else echo "OK: nenhum CHANGE_ME restante"; fi
+docker compose --env-file lialean.env -f lialean-stack.yml config >/tmp/lialean-stack.rendered.yml
+```
+
+- Se o comando indicar linhas com `CHANGE_ME`, corrija antes de prosseguir.
+- Abra `/tmp/lialean-stack.rendered.yml` se quiser confirmar os valores finais que serão aplicados.
+
+### 9.2 Baixar as imagens necessárias
+
+```bash
+docker compose --env-file lialean.env -f lialean-stack.yml pull traefik portainer postgres redis n8n-main n8n-webhook n8n-worker
+APP_IMAGE=$(grep '^APP_IMAGE=' lialean.env | cut -d= -f2)
+docker pull "${APP_IMAGE}"
+```
+
+- O `pull` garante que todas as imagens base estejam disponíveis localmente antes de subir.
+- Se `docker pull "${APP_IMAGE}"` falhar porque a imagem ainda não existe (primeiro deploy), continue com a etapa 9.3 apenas para a infraestrutura. Depois de concluir a Fase 11 (build e push da aplicação), retorne para a etapa 9.4.
+
+### 9.3 Subir infraestrutura (Traefik, Portainer, Postgres, Redis)
+
+```bash
+docker compose --env-file lialean.env -f lialean-stack.yml up -d traefik portainer postgres redis
 docker compose --env-file lialean.env -f lialean-stack.yml ps
 ```
 
-**Validação imediata**
-- Todos os serviços devem aparecer com `State` = `running`.
-- Logs:  
+- Os containers `traefik`, `portainer`, `lialean-postgres` e `lialean-redis` devem aparecer como `running`.
+- Valide logs iniciais:
   ```bash
   docker logs traefik --tail 50
-  docker logs lialean-app --tail 50
+  docker logs lialean-postgres --tail 30
+  docker logs lialean-redis --tail 30
   ```
-- Acesse os domínios no navegador (pode levar até 2 minutos para os certificados serem emitidos):
-  - `https://portainer.vps.lialean.cloud` (crie usuário admin na primeira vez).
-  - `https://n8n.vps.lialean.cloud` (login `N8N_BASIC_USER` / senha definida).
-  - `https://app.vps.lialean.cloud/health` (deve retornar `{"status":"ok"...}`).
 
-Se o certificado ainda não existir, verifique no log do Traefik se houve erro de ACME.
+### 9.4 Subir serviços da aplicação e automação
+
+Execute **somente quando `APP_IMAGE` estiver disponível** (após publicar a imagem com a Fase 11 ou se já existir no registry):
+
+```bash
+docker compose --env-file lialean.env -f lialean-stack.yml up -d app n8n-main n8n-webhook n8n-worker
+docker compose --env-file lialean.env -f lialean-stack.yml ps
+```
+
+- Os novos containers (`lialean-app`, `n8n-main`, `n8n-webhook`, `n8n-worker`) devem entrar com `State` = `running`.
+- Logs úteis:
+  ```bash
+  docker logs lialean-app --tail 50
+  docker logs n8n-main --tail 50
+  docker logs n8n-worker --tail 50
+  ```
+
+### 9.5 Validação final
+
+- Acesse `https://portainer.vps.lialean.cloud` e finalize a criação do usuário admin na primeira vez.
+- Quando o Traefik emitir os certificados (pode levar até 2 minutos), valide:
+  - `https://n8n.vps.lialean.cloud` (login `N8N_BASIC_USER` / senha definida no `.env`).
+  - `https://app.vps.lialean.cloud/health` (esperado `{"status":"ok",...}`) após iniciar o serviço `app`.
+- Se algum domínio não responder, verifique `docker logs traefik --tail 200` em busca de erros ACME ou de routing.
 
 ---
 
@@ -690,7 +732,14 @@ pnpm db:push
 1. Acesse `https://portainer.vps.lialean.cloud`.
 2. Navegue até **Stacks → lialean-stack**.
 3. Clique em **Editor** e atualize `APP_IMAGE` no arquivo `.env` (ou no Portainer → *Env variables*).
-4. Marque **Re-pull image** e confirme a atualização.
+4. Marque **Re-pull image** e confirme a atualização. Isso fará o redeploy com a nova imagem e iniciará os serviços `app` e `n8n*` caso ainda não estivessem ativos desde a etapa 9.4.
+
+Se optar por gerenciar via CLI (ou precisar subir os serviços manualmente após manter apenas a infraestrutura na etapa 9.3), execute:
+
+```bash
+cd /opt/lialean/stacks
+docker compose --env-file lialean.env -f lialean-stack.yml up -d app n8n-main n8n-webhook n8n-worker
+```
 
 **Validação**  
 - `docker compose ... ps` deve mostrar o container `lialean-app` com a nova tag.  
