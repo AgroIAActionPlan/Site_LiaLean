@@ -401,7 +401,6 @@ services:
     restart: unless-stopped
     command:
       - --http-enabled
-      - --http-port=9000
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
