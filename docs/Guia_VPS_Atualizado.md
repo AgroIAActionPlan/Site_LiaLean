@@ -612,10 +612,6 @@ docker compose --env-file lialean.env -f lialean-stack.yml config >/tmp/lialean-
 
 - Se o comando indicar linhas com `CHANGE_ME`, corrija antes de prosseguir.
 - Abra `/tmp/lialean-stack.rendered.yml` se quiser confirmar os valores finais que serão aplicados.
-- Sempre que atualizar o repositório (`git pull`) copie novamente o arquivo de stack oficial:
-  ```bash
-  cp ~/Site_LiaLean/lialean-stack.yml /opt/lialean/stacks/lialean-stack.yml
-  ```
 
 ### 9.2 Baixar as imagens necessárias
 
@@ -642,14 +638,6 @@ docker compose --env-file lialean.env -f lialean-stack.yml ps
   docker logs lialean-postgres --tail 30
   docker logs lialean-redis --tail 30
   ```
-- **Exposição temporária do PostgreSQL:** para executar migrações a partir do host, o serviço precisa estar com `ports: ["5432:5432"]`. O arquivo oficial (`~/Site_LiaLean/lialean-stack.yml`) já traz esse bloco, então após atualizar o stack:
-  ```bash
-  docker rm -f lialean-postgres
-  docker compose --env-file lialean.env -f lialean-stack.yml up -d --force-recreate --no-deps postgres
-  docker port lialean-postgres                 # deve mostrar 5432/tcp -> 0.0.0.0:5432
-  PGPASSWORD="$POSTGRES_PASSWORD" pg_isready -h 127.0.0.1 -p 5432 -U "$POSTGRES_USER"
-  ```
-  Quando as migrações terminarem você pode remover o bloco `ports` e recriar o serviço novamente para manter o banco acessível apenas pela rede interna.
 
 ### 9.4 Subir serviços da aplicação e automação
 
@@ -708,21 +696,6 @@ Deve mostrar “Did not find any relations” (banco vazio).
 
 ---
 
-### 10.3 Sincronizar metadados do Drizzle
-
-Antes de rodar qualquer comando do Drizzle no servidor, garanta que os arquivos de metadados estão alinhados com o repositório (evita o erro `data is malformed`):
-
-```bash
-cd ~/Site_LiaLean
-git checkout -- drizzle/meta/0000_snapshot.json drizzle/meta/_journal.json
-git pull origin main
-head -5 drizzle/meta/0000_snapshot.json   # confirme "dialect": "postgresql"
-```
-
-Se o repositório tiver modificações locais, resolva-as antes de continuar.
-
----
-
 ## Fase 11 – Rodar migrações e deploy da aplicação
 
 ### 11.1 Clonar repositório (no servidor, com usuário `deploy`)
@@ -734,35 +707,45 @@ cd Site_LiaLean
 pnpm install
 ```
 
+# O repositório já está clonado em ~/Site_LiaLean; por isso o git clone falhou. Basta reutilizar a pasta:
+
+```bash
+cd ~/Site_LiaLean
+git status
+git pull origin main   # opcional, se quiser garantir que está atualizado
+```
+(Se houvesse alterações locais, faça git status antes de pull.)
+
+# O servidor ainda não tem o PNPM instalado. Instale Node.js + PNPM (como usuário deploy):
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+sudo npm install -g pnpm@10
+```
+
+- Depois confirme node -v e pnpm -v.
+
+
+
+
 ### 11.2 Aplicar migrações no banco remoto
 
-- **Opção A – Executar do host (requer porta 5432 exposta):**
-  ```bash
-  cd ~/Site_LiaLean
-  set -a
-  source /opt/lialean/stacks/lialean.env
-  set +a
-  ENCODED_PASS=$(python3 -c 'import urllib.parse, os; print(urllib.parse.quote(os.environ["APP_DB_PASSWORD"]))')
-  export DATABASE_URL="postgresql://${APP_DB_USER}:${ENCODED_PASS}@localhost:5432/${POSTGRES_APP_DB}"
-  PGPASSWORD="$POSTGRES_PASSWORD" pg_isready -h 127.0.0.1 -p 5432 -U "$POSTGRES_USER"
-  pnpm db:push
-  ```
-  - Se o `pg_isready` não responder “accepting connections”, volte à Fase 9.3 e refaça a recriação do container `lialean-postgres`.
+```bash
+export DATABASE_URL="postgresql://appuser:APP_DB_PASSWORD@localhost:5432/lialean_db"
+pnpm db:push
+```
+- veja se está no diretório correto, caso contrário execute:
+```bash
+cd ~/Site_LiaLean
+set -a
+source /opt/lialean/stacks/lialean.env     # certificando-se de que valores com espaço estão entre aspas
+set +a
+export DATABASE_URL="postgresql://${APP_DB_USER}:${APP_DB_PASSWORD}@localhost:5432/${POSTGRES_APP_DB}"
+pnpm db:push
+```
 
-- **Opção B – Executar de dentro de um container (sem expor porta):**
-  1. Certifique-se de que o serviço `app` já tem imagem gerada (Fase 11.3) ou use a imagem oficial `node:20`.
-  2. Execute:
-     ```bash
-     docker compose --env-file /opt/lialean/stacks/lialean.env \
-       run --rm --no-deps \
-       -v ~/Site_LiaLean:/workspace -w /workspace \
-       node:20-alpine sh -lc "
-         npm install -g pnpm@10 &&
-         pnpm install &&
-         pnpm db:push
-       "
-     ```
-     Como o container usa a rede interna, o host `postgres` funciona sem expor portas.
+
 
 ### 11.3 Gerar e publicar imagem Docker
 
